@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .error { 
+            display: none; 
+            color: red; 
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="search">
+            <input type="text" placeholder="Enter the city" spellcheck="false">
+            <button><img src="images/search.png"></button>
+        </div>
+        <div class="error">
+            <p>Invalid City Name</p>
+        </div>
+        <div class="weather" style="display: none;">
+            <img src="images/rain.png" class="weather-icon">
+            <h1 class="temp">22°C</h1>
+            <h2 class="city">London</h2>
+            <div class="details">
+                <div class="col">
+                    <img src="images/humidity.png">
+                    <div>
+                        <p class="humidity">50%</p>
+                        <p>Humidity</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <img src="images/wind.png">
+                    <div>
+                        <p class="wind">15 km/h</p>
+                        <p>Wind Speed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apikey = "5833e33c667016ba0d74af3ea8b98956";
+        const apiUrl = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+        const searchBox = document.querySelector(".search input");
+        const searchBtn = document.querySelector(".search button");
+        const weatherIcon = document.querySelector(".weather-icon");
+
+        async function checkWeather(city) {
+            if (!city) {
+                document.querySelector(".error").style.display = "block";
+                document.querySelector(".error p").innerText = "Please enter a city name";
+                return;
+            }
+
+            try {
+                const response = await fetch(apiUrl + city + `&appid=${apikey}`);
+
+                if (!response.ok) {
+                    throw new Error("City not found");
+                }
+
+                const data = await response.json();
+
+                document.querySelector(".city").innerHTML = data.name;
+                document.querySelector(".temp").innerHTML = Math.round(data.main.temp) + "°C";
+                document.querySelector(".humidity").innerHTML = data.main.humidity + "%";
+                document.querySelector(".wind").innerHTML = data.wind.speed + " km/h";
+
+                // Set appropriate weather icon
+                const weatherCondition = data.weather[0].main;
+                if (weatherCondition === "Clouds") {
+                    weatherIcon.src = "images/clouds.png";
+                } else if (weatherCondition === "Clear") {
+                    weatherIcon.src = "images/clear.png";
+                } else if (weatherCondition === "Rain") {
+                    weatherIcon.src = "images/rain.png";
+                } else if (weatherCondition === "Drizzle") {
+                    weatherIcon.src = "images/drizzle.png";
+                } else if (weatherCondition === "Mist") {
+                    weatherIcon.src = "images/mist.png";
+                }
+
+                document.querySelector(".weather").style.display = "block";
+                document.querySelector(".error").style.display = "none";
+            } catch (error) {
+                document.querySelector(".error").style.display = "block";
+                document.querySelector(".error p").innerText = "Invalid City Name";
+                document.querySelector(".weather").style.display = "none";
+            }
+        }
+
+        searchBtn.addEventListener("click", () => {
+            checkWeather(searchBox.value.trim());
+        });
+
+        searchBox.addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+                checkWeather(searchBox.value.trim());
+            }
+        });
+    </script>
+</body>
+</html>
